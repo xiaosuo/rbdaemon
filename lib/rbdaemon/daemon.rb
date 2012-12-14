@@ -5,8 +5,6 @@ require 'etc'
 require 'syslog'
 
 module RBDaemon
-  class DaemonError < StandardError; end
-
   class Daemon
     def initialize(options = {}, *args)
       exit!(0) if fork

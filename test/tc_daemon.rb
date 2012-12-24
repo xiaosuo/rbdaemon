@@ -9,7 +9,7 @@ class TC_Daemon < Test::Unit::TestCase
     tmpfile = ::Tempfile.new('tc_daemon', '/tmp')
     File::chmod(0666, tmpfile.path)
     Process.fork do 
-      RBDaemon::Daemon.new({:user => 'nobody', :groups => 'nobody',
+      RBDaemon::Daemon.new({:user => 'daemon', :groups => ['daemon'],
                             :change_root => '/tmp'},
                            3, "ok\n", tmpfile.path) do |daemon, times, str, path|
         tmpfile = File.new(File.basename(path), 'w')
@@ -55,8 +55,8 @@ class TC_Daemon < Test::Unit::TestCase
     assert_equal("ok\n", lines[0])
 
     # check uid and gid
-    uid = Etc.getpwnam('nobody').uid
-    gid = Etc.getgrnam('nobody').gid
+    uid = Etc.getpwnam('daemon').uid
+    gid = Etc.getgrnam('daemon').gid
     status['Uid'].split(/\s+/).each do |s|
       assert_equal(uid, s.to_i)
     end

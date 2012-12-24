@@ -2,6 +2,7 @@
 require 'test/unit'
 require 'rbdaemon/daemon'
 require 'tempfile'
+require 'pathname'
 
 class TC_Daemon < Test::Unit::TestCase
   def test_smoke
@@ -65,17 +66,23 @@ class TC_Daemon < Test::Unit::TestCase
     end
 
     # check fds
+    major, minor, patch = RUBY_VERSION.split(/\./).map{|i| i.to_i}
+    if major > 1 or (major == 1 and minor > 8)
+      offset = 2
+    else
+      offset = 0
+    end
     Dir["#{proc_root}/fd/*"].each do |fn|
       fd = File.basename(fn).to_i
-      assert((0..5).to_a.include?(fd))
+      assert((0..(5+offset)).to_a.include?(fd))
       case fd
       when 0, 1, 2
         assert_equal('/dev/null', File::readlink(fn))
-      when 3
-        assert_equal(pid_file, File::readlink(fn))
-      when 4
+      when 3 + offset
+        assert_equal(Pathname.new(pid_file).realpath.to_s, File::readlink(fn))
+      when 4 + offset
         assert_match(/socket:\[\d+\]/, File::readlink(fn))
-      when 5
+      when 5 + offset
         assert_equal(tmpfile.path, File::readlink(fn))
       end
     end

@@ -35,7 +35,7 @@ module RBDaemon
       ident = options[:pid_file] ? options[:pid_file] : $0
       ident = File.basename(ident).split(/\./)[0]
 
-      Signal.trap('EXIT') do
+      at_exit do
         Syslog::log(Syslog::LOG_INFO, "#{ident} exited")
         options[:change_root] or (@pid_file and @pid_file.delete) rescue nil
       end
